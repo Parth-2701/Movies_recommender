@@ -1,7 +1,8 @@
 import pickle
 import streamlit as st
 import requests
-
+import gdown 
+import joblib,os
 OMDB_KEY = st.secrets["omdb_api_key"]
 
 def fetch_poster(title):
@@ -15,7 +16,6 @@ def recommend(movie):
     recommended_movie_names = []
     recommended_movie_posters = []
     for i in distances[1:6]:
-        # fetch the movie poster
         movie_id = movies.iloc[i[0]].movie_id
         recommended_movie_posters.append(fetch_poster(movies.iloc[i[0]].title))
         recommended_movie_names.append(movies.iloc[i[0]].title)
@@ -25,7 +25,12 @@ def recommend(movie):
 
 st.header('Movie Recommender System')
 movies = pickle.load(open('movie_list.pkl','rb'))
-similarity = pickle.load(open('similarity.pkl','rb'))
+MODEL_PATH = "my_model.pkl"
+FILE_ID = "1A7JiGFIZQpVKrMKxWgMxQXIL9DFjfffR"  
+if not os.path.exists(MODEL_PATH):
+    url = f"https://drive.google.com/uc?id={FILE_ID}"
+    gdown.download(url, MODEL_PATH, quiet=False)
+similarity = joblib.load(MODEL_PATH)
 
 movie_list = movies['title'].values
 selected_movie = st.selectbox(
