@@ -2,15 +2,12 @@ import pickle
 import streamlit as st
 import requests
 
-def fetch_poster(movie_title):
-    api_key = "Ydb84b82d"  
-    url = f"http://www.omdbapi.com/?t={movie_title}&apikey={api_key}"
-    data = requests.get(url).json()
-    poster_path = data.get('Poster')
-    if poster_path and poster_path != 'N/A':
-        return poster_path
-    else:
-        return "https://via.placeholder.com/300x450?text=No+Poster"
+OMDB_KEY = "db84b82d"
+
+def fetch_poster(title):
+    r = requests.get("http://www.omdbapi.com/", params={"t": title, "apikey": OMDB_KEY}).json()
+    poster = r.get("Poster")
+    return poster if poster and poster != "N/A" else None
 
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
@@ -20,7 +17,7 @@ def recommend(movie):
     for i in distances[1:6]:
         # fetch the movie poster
         movie_id = movies.iloc[i[0]].movie_id
-        recommended_movie_posters.append(fetch_poster(movie_id))
+        recommended_movie_posters.append(fetch_poster(movies.iloc[i[0]].title))
         recommended_movie_names.append(movies.iloc[i[0]].title)
 
     return recommended_movie_names,recommended_movie_posters
@@ -38,14 +35,14 @@ selected_movie = st.selectbox(
 
 if st.button('Show Recommendation'):
     recommended_movie_names,recommended_movie_posters = recommend(selected_movie)
-    col1, col2, col3, col4, col5 = st.beta_columns(5)
+    col1, col2, col3, col4, col5 = st.columns(5)  # ✅ use st.columns instead of st.beta_columns
+
     with col1:
         st.text(recommended_movie_names[0])
         st.image(recommended_movie_posters[0])
     with col2:
         st.text(recommended_movie_names[1])
         st.image(recommended_movie_posters[1])
-
     with col3:
         st.text(recommended_movie_names[2])
         st.image(recommended_movie_posters[2])
@@ -55,7 +52,3 @@ if st.button('Show Recommendation'):
     with col5:
         st.text(recommended_movie_names[4])
         st.image(recommended_movie_posters[4])
-
-
-
-
